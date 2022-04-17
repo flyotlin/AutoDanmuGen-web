@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div id="caption-wrapper">
+        <div id="caption">AutoDanmuGen</div>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <div class="mb-3">Upload your video and comments to start Danmu prediction</div>
+            <div class="mb-3" style="display: flex; justify-content: center; align-items: center;">
+                <label for="video" style="margin-right: 8px;">Video:</label>
+                <input name="video" type="file" class="form-control" id="video-src" value="Choose Video(.mp4)">
+            </div>
+            <div class="mb-3" style="display: flex; justify-content: center; align-items: center;">
+                <label for="comment" style="margin-right: 8px;">Comment:</label>
+                <input name="comment" type="file" class="form-control" id="comment-src" value="Choose Comment(.ass)">
+            </div>
+            <div class="mb-3">
+                <input type="submit" class="btn btn-primary" value="Upload!">
+            </div>
+        </form>
+    </div>
+{% endblock %}

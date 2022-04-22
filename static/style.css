@@ -16,7 +16,7 @@
     color: grey;
 }
 
-#video-wrapper {
+#preview-wrapper {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -25,7 +25,10 @@
 
 #tools {
     display: flex;
+    flex-direction: column;
     margin: 1.5rem;
+    justify-content: center;
+    align-items: center;
 }
 
 #tools > div {
@@ -33,7 +36,29 @@
     padding: 0 10px;
 }
 
-#comment-modal-body {
+#test-modal-body {
     max-height: 75vh;
     overflow: scroll;
+}
+
+/* Below is CSS for Test Result */
+.show-flex {
+    display: flex !important;
+}
+
+#comment-info-wrapper {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+
+.result-video-id {
+    text-align: center;
+}
+
+#carousel-wrapper {
+    width: 25%;
+    margin: auto;
+    display: none;
 }

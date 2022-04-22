@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
+{% block body %}
+<!-- Tools (test / predict) and Showing Video For AutoDanmuGen -->
+<div id="preview-wrapper">
+    <div id="tools">
+        <div>AutoDanmuGen Tools: </div>
+        <div>
+            <button id="open-predict-modal-btn" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#predictModal">Predict</button>
+            <button id="open-test-modal-btn" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#testModal">Test</button>
+        </div>
+        <div>
+            <div id="video_id">Video - {{ id }}</div>
+            <video id="danmu-video" src="{{ "/static/" ~ id ~ "/upload.mp4" }}" controls></video>
+        </div>
+    </div>
+</div>
+
+<!-- Test Modal -->
+<div class="modal fade" id="testModal" tabindex="-1" aria-labelledby="testModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="testModalLabel">Testing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="test-modal-body">
+                <form action="/test?id={{ id }}" method="post" id="testForm">
+                    <label for="abc">ABC</label>
+                    <input type="checkbox" name="abc" id="">
+                    <table class="table" id="test-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">time(min:sec)</th>
+                                <th scope="col">comment</th>
+                                <th scope="col">select test comment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <!-- <button id="start-test-btn" type="button" class="btn btn-primary">Start Testing</button> -->
+                <input class="btn btn-primary" type="submit" form="testForm" value="Start Testing"/>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Predict Modal -->
+{% endblock %}
+
+
+{% block script %}
+<script type=text/javascript>
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+
+<script>
+// When Test Modal is opened
+$('#open-test-modal-btn').click(() => {
+    $.ajax({
+        type: "GET",
+        url: $SCRIPT_ROOT + "/comments?id=" + $('#video_id').text().slice(8),
+        success: (data) => {
+            console.log(data);
+            let index = 0;
+            for (let i of data) {
+                let time = i.time;
+                let min = Math.floor(time / 60);
+                let sec = time % 60;
+                $('#test-table tbody').append(`<tr><th scope="row">${i.id}</th><td>${min}:${sec}</td><td>${i.comment}</td><td><input class="form-check-input" name="comments" value="${index}" type="checkbox" id=""></td></tr>`)
+                index += 1;
+            }
+        },
+        dataType: "json"
+    });
+});
+</script>
+{% endblock %}

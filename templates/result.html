@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
+{% block body %}
+<div id="video_id" class="result-video-id">Video - {{ id }}</div>
+<div id="comment_id" class="result-comment-id">Comment - {{ comment_idx }}</div>
+
+<!-- Comment Information -->
+<div id="comment-info-wrapper">
+    <h4 id="comment-info-text">Selected Comment: 明天開學一樣要來報到水嗎</h4>
+    <h4 id="comment-info-time">Comment Timestamp: 6 (s)</h4>
+    <h4 id="comment-info-id">Comment ID: 240</h4>
+</div>
+
+<!-- Carousel for Surrounding Frames -->
+<div id="carousel-wrapper">
+    <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+        <div id="carousel-indicators-wrapper" class="carousel-indicators"></div>
+        <div class="carousel-inner" id="carousel-inner-wrapper"></div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</div>
+
+<!-- Showing Results -->
+<div id="result-wrapper">
+    <div id="surrounding-comments"></div>
+    <div id="results"></div>
+</div>
+
+<!-- Skeleton Loader -->
+<div id="skeleton-loader-wrapper">
+    <div id="skeleton-loader-banner">Initializing Now...</div>
+    <div id="skeleton-loader-spinner" class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script type=text/javascript>
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+
+<script>
+let count = 0;
+let loadingFunc = () => {
+    $.ajax({
+        type: "GET",
+        url: $SCRIPT_ROOT + "/poll?id=" + $('#video_id').text().slice(8),
+        success: (data) => {
+            if (data === "done") {
+                setTestResultToPage();
+                $('#skeleton-loader-wrapper').remove();
+                $('#comment-info-wrapper').show();
+                $('#comment-info-wrapper').addClass('show-flex');
+                $('#carousel-wrapper').show();
+                clearInterval(loadingInterval);
+            } else {
+                $('#skeleton-loader-banner').text(data + ' Now...');
+            }
+        }
+    });
+};
+loadingFunc();
+var loadingInterval = setInterval(loadingFunc, 2000);
+
+let setTestResultToPage = () => {
+    let _video_id = $('#video_id').text().slice(8);
+    $.ajax({
+        type: "GET",
+        url: $SCRIPT_ROOT + "/test?id=" + _video_id,
+        success: (data) => {
+            console.log(data);
+            let idx = $('#comment_id').text().slice(10);
+            
+            // Set Comments Information
+            $('#comment-info-text').text('Selected Comment: ' + data[idx].comments);
+            $('#comment-info-time').text('Comment Timestamp: ' + data[idx].time + ' (s)');
+            $('#comment-info-id').text('Comment ID: ' + data[idx].id);
+
+            // Set Frames in Carousel
+            let time = parseInt(data[idx].time);
+            let max_frames_num = 1437;
+            for (let i of [-2, -1, 0, 1, 2]) {
+                if (time + i < 0 || time + i >= 1437) {
+                    continue;
+                }
+                if (i == -2) {
+                    $('#carousel-indicators-wrapper').append(`<button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="${ i + 2 }" class="active" aria-current="true"></button>`);
+                    $('#carousel-inner-wrapper').append(`<div class="carousel-item active"><img src="/static/${_video_id}/frames/${time+i}.bmp" class="d-block w-100" alt="..."></div>`);
+                } else {
+                    $('#carousel-indicators-wrapper').append(`<button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="${ i + 2 }"></button>`);
+                    $('#carousel-inner-wrapper').append(`<div class="carousel-item"><img src="/static/${_video_id}/frames/${time+i}.bmp" class="d-block w-100" alt="..."></div>`);
+                }
+            }
+
+            // Set Results
+            let surrounding_comments = '[ ';
+            for (const [key, val] of data[idx].surrounding_comments.entries()) {
+                surrounding_comments += val;
+                if (key < data[idx].surrounding_comments.length - 1) {
+                    surrounding_comments += ', ';
+                }
+            }
+            surrounding_comments += ' ]';
+            $('#surrounding-comments').text('Surrounding Comments: ' + surrounding_comments);
+
+            let result = '[ ';
+            for (const [key, val] of data[idx].result.entries()) {
+                result += val;
+                if (key < data[idx].result.length - 1) {
+                    result += ', ';
+                }
+            }
+            result += ' ]';
+            $('#results').text('Result: ' + result);
+        },
+        dataType: "json"
+    });
+};
+</script>
+{% endblock %}

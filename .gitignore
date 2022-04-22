@@ -2,3 +2,5 @@
 *.mp4
 *.ass
 tmp
+static
+!static/style.css

@@ -174,6 +174,16 @@ def post_test():
         return ("", HTTP_BAD_REQUEST)
     checked_comment_id = [int(x) for x in checked_comment_id]
 
+    # 把之前的 tmp files 清掉
+    if os.path.isfile(f'{os.getcwd()}/static/{_id}/comment.json'):
+        os.remove(f'{os.getcwd()}/static/{_id}/comment.json')
+    if os.path.isfile(f'{os.getcwd()}/static/{_id}/comment-context.json'):
+        os.remove(f'{os.getcwd()}/static/{_id}/comment-context.json')
+    if os.path.isfile(f'{os.getcwd()}/static/{_id}/comment-candidate.json'):
+        os.remove(f'{os.getcwd()}/static/{_id}/comment-candidate.json')
+    if os.path.isfile(f'{os.getcwd()}/static/{_id}/test-result.json'):
+        os.remove(f'{os.getcwd()}/static/{_id}/test-result.json')
+
     thread = threading.Thread(
         target=submethod_for_test,
         args=[_id, checked_comment_id]
@@ -181,7 +191,7 @@ def post_test():
     thread.daemon = True
     thread.start()
 
-    return redirect(url_for('result', id=_id))
+    return redirect(url_for('result', id=_id, comment_idx=0))
 
 
 @app.route('/predict', methods=['POST'])
